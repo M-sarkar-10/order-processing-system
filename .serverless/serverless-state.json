@@ -1,0 +1,502 @@
+{
+  "service": {
+    "service": "order-processing-service",
+    "serviceObject": {
+      "name": "order-processing-service"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "python3.8",
+      "region": "us-east-1",
+      "stage": "dev",
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "CreateOrderLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/order-processing-service-dev-createOrder"
+            }
+          },
+          "ProcessPaymentLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/order-processing-service-dev-processPayment"
+            }
+          },
+          "ShipOrderLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/order-processing-service-dev-shipOrder"
+            }
+          },
+          "SendNotificationLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/order-processing-service-dev-sendNotification"
+            }
+          },
+          "TriggerOrderProcessingLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/order-processing-service-dev-triggerOrderProcessing"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "order-processing-service",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/order-processing-service-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/order-processing-service-dev*:*:*"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "order-processing-service",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "CreateOrderLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-3de87e23-2d08",
+                "S3Key": "serverless/order-processing-service/dev/1743548688978-2025-04-01T23:04:48.978Z/order-processing-service.zip"
+              },
+              "Handler": "handler.createOrder",
+              "Runtime": "python3.8",
+              "FunctionName": "order-processing-service-dev-createOrder",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "CreateOrderLogGroup"
+            ]
+          },
+          "ProcessPaymentLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-3de87e23-2d08",
+                "S3Key": "serverless/order-processing-service/dev/1743548688978-2025-04-01T23:04:48.978Z/order-processing-service.zip"
+              },
+              "Handler": "handler.processPayment",
+              "Runtime": "python3.8",
+              "FunctionName": "order-processing-service-dev-processPayment",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "ProcessPaymentLogGroup"
+            ]
+          },
+          "ShipOrderLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-3de87e23-2d08",
+                "S3Key": "serverless/order-processing-service/dev/1743548688978-2025-04-01T23:04:48.978Z/order-processing-service.zip"
+              },
+              "Handler": "handler.shipOrder",
+              "Runtime": "python3.8",
+              "FunctionName": "order-processing-service-dev-shipOrder",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "ShipOrderLogGroup"
+            ]
+          },
+          "SendNotificationLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-3de87e23-2d08",
+                "S3Key": "serverless/order-processing-service/dev/1743548688978-2025-04-01T23:04:48.978Z/order-processing-service.zip"
+              },
+              "Handler": "handler.sendNotification",
+              "Runtime": "python3.8",
+              "FunctionName": "order-processing-service-dev-sendNotification",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "SendNotificationLogGroup"
+            ]
+          },
+          "TriggerOrderProcessingLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "serverless-framework-deployments-us-east-1-3de87e23-2d08",
+                "S3Key": "serverless/order-processing-service/dev/1743548688978-2025-04-01T23:04:48.978Z/order-processing-service.zip"
+              },
+              "Handler": "handler.triggerOrderProcessing",
+              "Runtime": "python3.8",
+              "FunctionName": "order-processing-service-dev-triggerOrderProcessing",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "TriggerOrderProcessingLogGroup"
+            ]
+          },
+          "CreateOrderLambdaVersionJQjmgWN3Unu7t6aZcG90hvmmdDvlMm3dU982oUJ5xh4": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "CreateOrderLambdaFunction"
+              },
+              "CodeSha256": "Ax8kQncIm8g2VnnPJtFflAT+WfUmhnDTZ9MGpoF2cxY="
+            }
+          },
+          "ProcessPaymentLambdaVersioncqt6uGahpxOcyR53QFoQRtWQdxVnCVwbZri5uQhZw": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ProcessPaymentLambdaFunction"
+              },
+              "CodeSha256": "Ax8kQncIm8g2VnnPJtFflAT+WfUmhnDTZ9MGpoF2cxY="
+            }
+          },
+          "ShipOrderLambdaVersionbTtuuuWDVLkFymhsOC0kjnOQHbJFqOoKm3nn4stDwew": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ShipOrderLambdaFunction"
+              },
+              "CodeSha256": "Ax8kQncIm8g2VnnPJtFflAT+WfUmhnDTZ9MGpoF2cxY="
+            }
+          },
+          "SendNotificationLambdaVersionbfE9oMOxIrkvysXel14u988PBSmbo3BUXvHrpaI": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SendNotificationLambdaFunction"
+              },
+              "CodeSha256": "Ax8kQncIm8g2VnnPJtFflAT+WfUmhnDTZ9MGpoF2cxY="
+            }
+          },
+          "TriggerOrderProcessingLambdaVersioniYx0mHk0Wnc9uYaLTyo1DNBHVeFw5LOENnOxV97NNU": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "TriggerOrderProcessingLambdaFunction"
+              },
+              "CodeSha256": "Ax8kQncIm8g2VnnPJtFflAT+WfUmhnDTZ9MGpoF2cxY="
+            }
+          },
+          "StateMachine": {
+            "Type": "AWS::StepFunctions::StateMachine",
+            "Properties": {
+              "StateMachineName": "OrderProcessingStateMachine",
+              "RoleArn": "arn:aws:iam::718361999916:role/MyStepFunctionsRole",
+              "DefinitionString": {
+                "Fn::Sub": "{\n  \"Comment\": \"Order Processing Workflow\",\n  \"StartAt\": \"CreateOrder\",\n  \"States\": {\n    \"CreateOrder\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"${CreateOrderLambdaFunction.Arn}\",\n      \"Next\": \"ProcessPayment\"\n    },\n    \"ProcessPayment\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"${ProcessPaymentLambdaFunction.Arn}\",\n      \"Next\": \"ShipOrder\"\n    },\n    \"ShipOrder\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"${ShipOrderLambdaFunction.Arn}\",\n      \"Next\": \"SendNotification\"\n    },\n    \"SendNotification\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"${SendNotificationLambdaFunction.Arn}\",\n      \"End\": true\n    }\n  }\n}\n"
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-us-east-1-3de87e23-2d08",
+            "Export": {
+              "Name": "sls-order-processing-service-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "CreateOrderLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "CreateOrderLambdaVersionJQjmgWN3Unu7t6aZcG90hvmmdDvlMm3dU982oUJ5xh4"
+            },
+            "Export": {
+              "Name": "sls-order-processing-service-dev-CreateOrderLambdaFunctionQualifiedArn"
+            }
+          },
+          "ProcessPaymentLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ProcessPaymentLambdaVersioncqt6uGahpxOcyR53QFoQRtWQdxVnCVwbZri5uQhZw"
+            },
+            "Export": {
+              "Name": "sls-order-processing-service-dev-ProcessPaymentLambdaFunctionQualifiedArn"
+            }
+          },
+          "ShipOrderLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ShipOrderLambdaVersionbTtuuuWDVLkFymhsOC0kjnOQHbJFqOoKm3nn4stDwew"
+            },
+            "Export": {
+              "Name": "sls-order-processing-service-dev-ShipOrderLambdaFunctionQualifiedArn"
+            }
+          },
+          "SendNotificationLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SendNotificationLambdaVersionbfE9oMOxIrkvysXel14u988PBSmbo3BUXvHrpaI"
+            },
+            "Export": {
+              "Name": "sls-order-processing-service-dev-SendNotificationLambdaFunctionQualifiedArn"
+            }
+          },
+          "TriggerOrderProcessingLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "TriggerOrderProcessingLambdaVersioniYx0mHk0Wnc9uYaLTyo1DNBHVeFw5LOENnOxV97NNU"
+            },
+            "Export": {
+              "Name": "sls-order-processing-service-dev-TriggerOrderProcessingLambdaFunctionQualifiedArn"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "pluginsData": {},
+    "functions": {
+      "createOrder": {
+        "handler": "handler.createOrder",
+        "events": [],
+        "name": "order-processing-service-dev-createOrder",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "python3.8",
+        "vpc": {},
+        "versionLogicalId": "CreateOrderLambdaVersionJQjmgWN3Unu7t6aZcG90hvmmdDvlMm3dU982oUJ5xh4"
+      },
+      "processPayment": {
+        "handler": "handler.processPayment",
+        "events": [],
+        "name": "order-processing-service-dev-processPayment",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "python3.8",
+        "vpc": {},
+        "versionLogicalId": "ProcessPaymentLambdaVersioncqt6uGahpxOcyR53QFoQRtWQdxVnCVwbZri5uQhZw"
+      },
+      "shipOrder": {
+        "handler": "handler.shipOrder",
+        "events": [],
+        "name": "order-processing-service-dev-shipOrder",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "python3.8",
+        "vpc": {},
+        "versionLogicalId": "ShipOrderLambdaVersionbTtuuuWDVLkFymhsOC0kjnOQHbJFqOoKm3nn4stDwew"
+      },
+      "sendNotification": {
+        "handler": "handler.sendNotification",
+        "events": [],
+        "name": "order-processing-service-dev-sendNotification",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "python3.8",
+        "vpc": {},
+        "versionLogicalId": "SendNotificationLambdaVersionbfE9oMOxIrkvysXel14u988PBSmbo3BUXvHrpaI"
+      },
+      "triggerOrderProcessing": {
+        "handler": "handler.triggerOrderProcessing",
+        "events": [],
+        "name": "order-processing-service-dev-triggerOrderProcessing",
+        "package": {},
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "python3.8",
+        "vpc": {},
+        "versionLogicalId": "TriggerOrderProcessingLambdaVersioniYx0mHk0Wnc9uYaLTyo1DNBHVeFw5LOENnOxV97NNU"
+      }
+    },
+    "resources": {
+      "Resources": {
+        "StateMachine": {
+          "Type": "AWS::StepFunctions::StateMachine",
+          "Properties": {
+            "StateMachineName": "OrderProcessingStateMachine",
+            "RoleArn": "arn:aws:iam::718361999916:role/MyStepFunctionsRole",
+            "DefinitionString": {
+              "Fn::Sub": "{\n  \"Comment\": \"Order Processing Workflow\",\n  \"StartAt\": \"CreateOrder\",\n  \"States\": {\n    \"CreateOrder\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"${CreateOrderLambdaFunction.Arn}\",\n      \"Next\": \"ProcessPayment\"\n    },\n    \"ProcessPayment\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"${ProcessPaymentLambdaFunction.Arn}\",\n      \"Next\": \"ShipOrder\"\n    },\n    \"ShipOrder\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"${ShipOrderLambdaFunction.Arn}\",\n      \"Next\": \"SendNotification\"\n    },\n    \"SendNotification\": {\n      \"Type\": \"Task\",\n      \"Resource\": \"${SendNotificationLambdaFunction.Arn}\",\n      \"End\": true\n    }\n  }\n}\n"
+            }
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless",
+    "initialServerlessConfig": {
+      "service": "order-processing-service",
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      },
+      "outputs": {
+        "CreateOrderLambdaArn": {
+          "Value": {
+            "Fn::GetAtt": [
+              "CreateOrderLambdaFunction",
+              "Arn"
+            ]
+          },
+          "Export": {
+            "Name": "CreateOrderLambdaArn"
+          }
+        },
+        "ProcessPaymentLambdaArn": {
+          "Value": {
+            "Fn::GetAtt": [
+              "ProcessPaymentLambdaFunction",
+              "Arn"
+            ]
+          },
+          "Export": {
+            "Name": "ProcessPaymentLambdaArn"
+          }
+        },
+        "ShipOrderLambdaArn": {
+          "Value": {
+            "Fn::GetAtt": [
+              "ShipOrderLambdaFunction",
+              "Arn"
+            ]
+          },
+          "Export": {
+            "Name": "ShipOrderLambdaArn"
+          }
+        },
+        "SendNotificationLambdaArn": {
+          "Value": {
+            "Fn::GetAtt": [
+              "SendNotificationLambdaFunction",
+              "Arn"
+            ]
+          },
+          "Export": {
+            "Name": "SendNotificationLambdaArn"
+          }
+        }
+      }
+    },
+    "appId": null,
+    "orgId": null,
+    "layers": {},
+    "outputs": {
+      "$ref": "$[\"service\"][\"initialServerlessConfig\"][\"outputs\"]"
+    },
+    "artifact": "C:\\Users\\HP\\order-processing-system\\.serverless\\order-processing-service.zip"
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/order-processing-service/dev/1743548688978-2025-04-01T23:04:48.978Z",
+    "artifact": "order-processing-service.zip"
+  }
+}

@@ -1,0 +1,71 @@
+service: order-processing-service # This is the name of your service
+
+provider:
+  name: aws
+  runtime: python3.8
+  region: us-east-1
+
+functions:
+  createOrder:
+    handler: handler.createOrder
+  processPayment:
+    handler: handler.processPayment
+  shipOrder:
+    handler: handler.shipOrder
+  sendNotification:
+    handler: handler.sendNotification
+  triggerOrderProcessing:
+    handler: handler.triggerOrderProcessing
+
+resources:
+  Resources:
+    StateMachine:
+      Type: AWS::StepFunctions::StateMachine
+      Properties:
+        StateMachineName: OrderProcessingStateMachine
+        RoleArn: arn:aws:iam::718361999916:role/MyStepFunctionsRole
+        DefinitionString: !Sub |
+          {
+            "Comment": "Order Processing Workflow",
+            "StartAt": "CreateOrder",
+            "States": {
+              "CreateOrder": {
+                "Type": "Task",
+                "Resource": "${CreateOrderLambdaFunction.Arn}",
+                "Next": "ProcessPayment"
+              },
+              "ProcessPayment": {
+                "Type": "Task",
+                "Resource": "${ProcessPaymentLambdaFunction.Arn}",
+                "Next": "ShipOrder"
+              },
+              "ShipOrder": {
+                "Type": "Task",
+                "Resource": "${ShipOrderLambdaFunction.Arn}",
+                "Next": "SendNotification"
+              },
+              "SendNotification": {
+                "Type": "Task",
+                "Resource": "${SendNotificationLambdaFunction.Arn}",
+                "End": true
+              }
+            }
+          }
+
+outputs:
+  CreateOrderLambdaArn:
+    Value: !GetAtt CreateOrderLambdaFunction.Arn
+    Export:
+      Name: CreateOrderLambdaArn
+  ProcessPaymentLambdaArn:
+    Value: !GetAtt ProcessPaymentLambdaFunction.Arn
+    Export:
+      Name: ProcessPaymentLambdaArn
+  ShipOrderLambdaArn:
+    Value: !GetAtt ShipOrderLambdaFunction.Arn
+    Export:
+      Name: ShipOrderLambdaArn
+  SendNotificationLambdaArn:
+    Value: !GetAtt SendNotificationLambdaFunction.Arn
+    Export:
+      Name: SendNotificationLambdaArn
