@@ -106,6 +106,3 @@ This function simulates sending a notification once the order has been processed
 ## Conclusion
 This Order Processing System leverages AWS services to efficiently manage and process orders, payments, shipping, and notifications. It ensures the system operates in a serverless, scalable manner, leveraging AWS Step Functions to handle complex workflows.
 
----
-
-Let me know if you'd like to make any adjustments to this!
