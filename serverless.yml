@@ -1,28 +1,63 @@
-service: order-processing-service # This is the name of your service
+service: order-processing-service
 
 provider:
   name: aws
   runtime: python3.8
   region: us-east-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:GetItem
+        - dynamodb:Scan
+      Resource: arn:aws:dynamodb:us-east-1:718361999916:table/OrderTable
+    - Effect: Allow
+      Action:
+        - states:StartExecution
+      Resource: !Sub arn:aws:states:us-east-1:718361999916:stateMachine:OrderProcessingStateMachine-test-v2
 
 functions:
-  createOrder:
-    handler: handler.createOrder
-  processPayment:
-    handler: handler.processPayment
-  shipOrder:
-    handler: handler.shipOrder
-  sendNotification:
-    handler: handler.sendNotification
   triggerOrderProcessing:
     handler: handler.triggerOrderProcessing
+    events:
+      - http:
+          path: process-order
+          method: post
+          cors: true
+
+  createOrder:
+    handler: handler.createOrder
+
+  processPayment:
+    handler: handler.processPayment
+
+  shipOrder:
+    handler: handler.shipOrder
+
+  sendNotification:
+    handler: handler.sendNotification
 
 resources:
   Resources:
+    OrderTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: OrderTable
+        AttributeDefinitions:
+          - AttributeName: orderId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: orderId
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+
     StateMachine:
       Type: AWS::StepFunctions::StateMachine
       Properties:
-        StateMachineName: OrderProcessingStateMachine
+        StateMachineName: OrderProcessingStateMachine-test-v2
         RoleArn: arn:aws:iam::718361999916:role/MyStepFunctionsRole
         DefinitionString: !Sub |
           {
@@ -32,40 +67,51 @@ resources:
               "CreateOrder": {
                 "Type": "Task",
                 "Resource": "${CreateOrderLambdaFunction.Arn}",
-                "Next": "ProcessPayment"
+                "Next": "ProcessPayment",
+                "InputPath": "$",
+                "ResultPath": "$.input"
               },
               "ProcessPayment": {
                 "Type": "Task",
                 "Resource": "${ProcessPaymentLambdaFunction.Arn}",
-                "Next": "ShipOrder"
+                "Next": "ShipOrder",
+                "InputPath": "$",
+                "ResultPath": "$.input"
               },
               "ShipOrder": {
                 "Type": "Task",
                 "Resource": "${ShipOrderLambdaFunction.Arn}",
-                "Next": "SendNotification"
+                "Next": "SendNotification",
+                "InputPath": "$",
+                "ResultPath": "$.input"
               },
               "SendNotification": {
                 "Type": "Task",
                 "Resource": "${SendNotificationLambdaFunction.Arn}",
-                "End": true
+                "End": true,
+                "InputPath": "$",
+                "ResultPath": "$.input"
               }
             }
           }
 
-outputs:
-  CreateOrderLambdaArn:
-    Value: !GetAtt CreateOrderLambdaFunction.Arn
-    Export:
-      Name: CreateOrderLambdaArn
-  ProcessPaymentLambdaArn:
-    Value: !GetAtt ProcessPaymentLambdaFunction.Arn
-    Export:
-      Name: ProcessPaymentLambdaArn
-  ShipOrderLambdaArn:
-    Value: !GetAtt ShipOrderLambdaFunction.Arn
-    Export:
-      Name: ShipOrderLambdaArn
-  SendNotificationLambdaArn:
-    Value: !GetAtt SendNotificationLambdaFunction.Arn
-    Export:
-      Name: SendNotificationLambdaArn
+  Outputs:
+    CreateOrderLambdaArn:
+      Value: !GetAtt CreateOrderLambdaFunction.Arn
+      Export:
+        Name: CreateOrderLambdaArn
+
+    ProcessPaymentLambdaArn:
+      Value: !GetAtt ProcessPaymentLambdaFunction.Arn
+      Export:
+        Name: ProcessPaymentLambdaArn
+
+    ShipOrderLambdaArn:
+      Value: !GetAtt ShipOrderLambdaFunction.Arn
+      Export:
+        Name: ShipOrderLambdaArn
+
+    SendNotificationLambdaArn:
+      Value: !GetAtt SendNotificationLambdaFunction.Arn
+      Export:
+        Name: SendNotificationLambdaArn
