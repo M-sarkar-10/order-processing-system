@@ -1,6 +1,4 @@
-Here is a sample README file based on your final Lambda function:
 
----
 
 # Order Processing System
 
